@@ -168,7 +168,7 @@ module.exports = function(grunt) {
             },
             fpm: ['--name', 'wire-desktop-internal'],
           },
-          icon: 'resources/macos/wire.internal.icns',
+          icon: '../../resources/macos/wire.internal.icns',
           linux: {
             category: LINUX_SETTINGS.category,
             executableName: 'wire-desktop-internal',
