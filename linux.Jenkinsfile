@@ -5,6 +5,8 @@ def parseJson(def text) {
 
 node('node180') {
 
+  def production = params.PRODUCTION
+
   checkout scm
 
   def jenkinsbot_secret = ''
@@ -34,7 +36,11 @@ node('node180') {
         sh 'yarn'
         sh 'yarn build:ts'
         withCredentials([string(credentialsId: 'RAYGUN_API_KEY', variable: 'RAYGUN_API_KEY')]) {
-          sh 'npx grunt linux-prod'
+          if(production) {
+            sh 'npx grunt linux-prod'
+          } else {
+            sh 'npx grunt linux'
+          }
         }
       } catch(e) {
         currentBuild.result = 'FAILED'
@@ -64,9 +70,11 @@ node('node180') {
       archiveArtifacts 'info.json,wrap/dist/*.deb,wrap/dist/*.rpm,wrap/dist/*.AppImage,wrap/dist/debian/**'
     }
 
-    stage('Upload build as draft to GitHub') {
-      withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {
-        sh 'cd wrap/dist/ && python ../../bin/github_draft.py'
+    if(production) {
+      stage('Upload build as draft to GitHub') {
+        withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {
+          sh 'cd wrap/dist/ && python ../../bin/github_draft.py'
+        }
       }
     }
   }
